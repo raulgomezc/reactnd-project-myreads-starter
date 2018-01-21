@@ -5,9 +5,6 @@ import Search from './Search';
 import Shelves from './Shelves';
 
 class App extends Component {
-  state = {
-  }
-
   render() {
     return (
       <div className="app">
