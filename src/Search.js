@@ -44,9 +44,8 @@ export default class Search extends Component {
           <ol className='books-grid'>
             {this.state.books.map((book) => <Book
               key={book.id}
-              title={book.title}
-              authors={book.authors}
-              image={book.imageLinks.thumbnail}
+              book={book}
+              onShelveChange={this.props.onShelveChange}
             />)}
           </ol>
         </div>
