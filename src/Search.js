@@ -6,22 +6,22 @@ import Book from './Book';
 export default class Search extends Component {
   state = {
     query: '',
-    books: []
+    books: [],
+    noBooks: false
   }
 
-  updateQuery = (query) => {
-    this.setState({ query: query.trim() })
-  }
-
-  clearQuery = () => {
-    this.setState({ query: '' })
-  }
-
-  handleSubmit = () => {
-    BooksAPI.search(this.state.query).then((books) => this.setState({books}));
+  handleChange = (query) => {
+    this.setState({query});
+    if (!query) return;
+    BooksAPI.search(query.trim()).then((books) => {
+      if (books.error) books = [];
+      const noBooks = books.length === 0;
+      this.setState({books, noBooks})
+    });
   }
 
   render() {
+    let { shelves, onShelveChange } = this.props;
     return (
       <div className='search-books'>
         <div className='search-books-bar'>
@@ -31,23 +31,33 @@ export default class Search extends Component {
               type='text'
               placeholder='Search by title or author'
               value={this.state.query}
-              onChange={(event) => this.updateQuery(event.target.value)}
-              onKeyPress={((event) => {
-                if (event.key === 'Enter') {
-                  this.handleSubmit();
-                }
-              })}
+              onChange={(event) => this.handleChange(event.target.value)}
             />
           </div>
         </div>
         <div className='search-books-results'>
+          {this.state.query && this.state.noBooks &&
+          <div className='books-place-holder'>
+            <h1>{'No books found'}</h1>
+          </div>}
+          {this.state.query && this.state.books.length > 0 &&
           <ol className='books-grid'>
-            {this.state.books.map((book) => <Book
+            {this.state.books.map((book) => {
+              let selectedShelve;
+              for (let shelve in shelves){
+                let inShelve = shelves[shelve].find((b) => b.id === book.id);
+                if (inShelve){
+                  selectedShelve = shelve;
+                  break;
+                }
+              }
+              return <Book
               key={book.id}
               book={book}
-              onShelveChange={this.props.onShelveChange}
-            />)}
-          </ol>
+              onShelveChange={onShelveChange}
+              shelve={selectedShelve}
+            />})}
+          </ol>}
         </div>
       </div>
     );

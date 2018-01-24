@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Route } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 import * as BooksAPI from './BooksAPI';
 import Search from './Search';
 import Shelves from './Shelves';
@@ -13,12 +13,13 @@ class App extends Component {
   }
 
   onShelveChange = (book, shelve, oldShelve) => {
-    BooksAPI.update(book, shelve).then(() => this.setState((state) => {
-      let stateToSet = {...state};
+    BooksAPI.update(book, shelve);
+    this.setState((state) => {
+      let stateToSet = Object.assign({}, state);
       stateToSet[shelve].push(book);
       stateToSet[oldShelve] = stateToSet[oldShelve].filter((b) => b.id !== book.id);
       return stateToSet;
-    }));
+    });
   }
 
   componentDidMount = () => {
@@ -39,7 +40,7 @@ class App extends Component {
         if (shelves.currentlyReading.find(id => id === book.id)) return stateToSet.currentlyReading.push(book);
         if (shelves.wantToRead.find(id => id === book.id)) return stateToSet.wantToRead.push(book);
         if (shelves.read.find(id => id === book.id)) return stateToSet.read.push(book);
-        return null;
+        return 'none';
       });
       this.setState(stateToSet);
     });
@@ -50,8 +51,11 @@ class App extends Component {
     let shelves = {currentlyReading, wantToRead, read}
     return (
       <div className='app'>
-        <Route exact path='/' render={() => <Shelves onShelveChange={this.onShelveChange} shelves={shelves} />} />
-        <Route path='/search' render={() => <Search onShelveChange={this.onShelveChange} />} />
+        <Switch>
+          <Route exact path='/' render={() => <Shelves onShelveChange={this.onShelveChange} shelves={shelves} />} />
+          <Route path='/search' render={() => <Search onShelveChange={this.onShelveChange} shelves={shelves} />} />
+          <Route render={() => <div>Not found</div>} />
+        </Switch>
       </div>
     );
   }
